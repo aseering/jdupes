@@ -54,7 +54,7 @@ MKDIR   = mkdir -p
 CC ?= gcc
 COMPILER_OPTIONS = -Wall -Wwrite-strings -Wcast-align -Wstrict-aliasing -Wstrict-prototypes -Wpointer-arith -Wundef
 COMPILER_OPTIONS += -Wshadow -Wfloat-equal -Waggregate-return -Wcast-qual -Wswitch-default -Wswitch-enum -Wconversion -Wunreachable-code -Wformat=2
-COMPILER_OPTIONS += -std=gnu99 -O2 -g -D_FILE_OFFSET_BITS=64 -fstrict-aliasing -pipe
+COMPILER_OPTIONS += -O2 -g -D_FILE_OFFSET_BITS=64 -fstrict-aliasing -pipe
 COMPILER_OPTIONS += -DSMA_MAX_FREE=11 -DNO_ATIME
 
 #####################################################################
@@ -170,7 +170,8 @@ ifdef STATIC_DEDUPE_H
 COMPILER_OPTIONS += -DSTATIC_DEDUPE_H
 endif
 
-CFLAGS += $(COMPILER_OPTIONS) $(CFLAGS_EXTRA)
+CFLAGS += $(COMPILER_OPTIONS) -std=gnu99 $(CFLAGS_EXTRA)
+CXXFLAGS += $(COMPILER_OPTIONS) -fpermissive $(CFLAGS_EXTRA)
 
 INSTALL_PROGRAM = $(INSTALL) -m 0755
 INSTALL_DATA    = $(INSTALL) -m 0644
@@ -188,14 +189,14 @@ OBJS += $(ADDITIONAL_OBJECTS)
 all: $(PROGRAM_NAME)
 
 static: $(PROGRAM_NAME)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(PROGRAM_NAME) $(OBJS) -static
+	$(CXX) $(CFLAGS) $(LDFLAGS) -o $(PROGRAM_NAME) $(OBJS) -static
 
-static_stripped: $(PROGRAM_NAME)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(PROGRAM_NAME) $(OBJS) -static
+static_stripped: $(PROGRAM_NAME) 
+	$(CXX) $(CFLAGS) $(LDFLAGS) -o $(PROGRAM_NAME) $(OBJS) -static
 	strip $(PROGRAM_NAME)
 
 $(PROGRAM_NAME): $(OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(PROGRAM_NAME) $(OBJS)
+	$(CXX) $(CFLAGS) $(LDFLAGS) -o $(PROGRAM_NAME) $(OBJS) -labsl_hash -labsl_raw_hash_set
 
 winres.o: winres.rc winres.manifest.xml
 	./tune_winres.sh
